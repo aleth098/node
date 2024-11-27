@@ -1,0 +1,1077 @@
+code of crud operation using php for dept and emp 
+	|
+start xammp or wamp server
+	|
+create a one "folder" in "htdocs" for "xammp server" and create a folder in "wamp64/www" for wamp server
+	|
+create and open particular folder in vscode
+	|
+open folder in vscode terminal
+	|
+write a command line for node_module or package
+	|
+npm init
+npm i nodemon
+npm i nodemon -g
+npm i cors ejs express express-session mongodb mongoose bcryptjs cookie-parser jsonwebtoken 
+	|
+create "index.js" & "db.js" file for connect mongodb & server creation
+	|
+---------------
+in "db.js" file
+---------------
+
+let mongoose = require('mongoose')
+
+mongoose.connect("mongodb://localhost:27017/dbname")
+
+module.exports = mongoose;
+	
+
+---------------
+in "index.js" file
+---------------
+
+let express = require('express')
+let cors = require('cors')
+
+let server = express()
+server.use(express.json())
+server.use(cors())
+
+let deptRoute = require('./Routes/deptRoute')
+server.use(deptRoute)
+
+let empRoute = require('./Routes/empRoute')
+server.use(empRoute)
+
+server.listen(2000)
+
+---------------------------
+	|
+create "Models" & "Routes" folder for database schema & crud operation
+	|
+create "Dept.js" & "Emp.js" in "Models" folder
+	|
+-------------------
+in "Dept.js" file
+-------------------
+
+let db = require('../db')
+
+let schema = new db.Schema({
+    name: {
+        type: String,
+        required: true
+    },
+    city: {
+        type: String,
+        required: true
+    }
+});
+
+let Dept = db.model('Dept', schema);
+
+module.exports = Dept
+
+--------------------
+	|
+-------------------
+in "Emp.js" file
+-------------------
+
+let db = require('../db')
+
+let schema = new db.Schema({
+    name:{
+        type : String,
+        required : true
+    },
+    email:{
+        type : String,
+        required : true
+    },
+    password:{
+        type:String,
+        required : true
+    },
+    pno:{
+        type: Number,
+        required : true
+    }
+})
+
+let Emp = db.model('Emp',schema)
+module.exports = Emp
+
+-------------------------------------------------
+	|
+create "deptRoute.js" & "empRoute.js" file in "Routes"
+	|
+-------------------------
+in "deptRoute.js" file
+-------------------------
+
+let Dept = require('../Models/Dept')
+const router = require('express').Router()
+
+//get all
+router.get('/dept/findall' , async function (req , res){
+    let alldept = await Dept.find({})
+    return res.json(alldept)
+})
+
+// Add New Department
+router.post('/dept/addnew' , async function (req,res) {
+    let {name , city} = req.body
+    let d = new Dept
+    d.name = name
+    d.city = city
+    await d.save()
+    return res.json(d)
+})
+
+// Update Department
+router.post('/dept/update/:id', async function (req, res) {
+    let {name, city} = req.body;
+    let id = req.params.id;
+    let d = await Dept.findById(id);
+    d.name = name
+    d.city = city
+    await d.save()
+    return res.json(d);
+})
+
+// Delete Department
+router.get('/dept/delete/:id', async function (req, res) {
+    let id = req.params.id
+    let d = await Dept.findByIdAndDelete(id)
+    return res.json(d)
+})
+
+// Get Single Department
+router.get('/dept/getsingle/:id', async function (req, res) {
+    let id = req.params.id
+    let d = await Dept.findById(id)
+    return res.json(d)
+})
+
+module.exports = router
+
+-------------------------
+	|
+-------------------------
+in empRoute.js file
+-------------------------
+
+let Emp = require('../Models/Emp')
+let router = require('express').Router()
+
+//get all data
+router.get('/emp/getall' , async function(req,res){
+    let allemp = await Emp.find({})
+    return res.json(allemp)
+})
+
+//add data
+router.post('/emp/addall' , async function(req,res){
+    let {name , pno , email , password} = req.body
+    let e = new Emp
+    e.name = name
+    e.pno = pno
+    e.email = email
+    e.password = password
+    await e.save()
+    return res.json(e)
+})
+
+//update
+router.post('/emp/upd/:id', async function(req,res){
+    let {name,pno,email,password} = req.body
+    let id = req.params.id
+    let u = await Emp.findById(id)
+    u.name = name
+    u.pno = pno
+    u.email = email
+    u.password = password
+    await u.save()
+    return res.json(u)
+})
+
+//delete
+router.get('/emp/del/:id' , async function(req,res){
+    let id = req.params.id
+    let d = await Emp.findByIdAndDelete(id)
+    return res.json(d)
+})
+
+//single data fetch
+router.get('/emp/sigfe/:id' , async function(req,res){
+    let id = req.params.id
+    let s = await Emp.findById(id)
+    return res.json(s)
+})
+
+
+module.exports = router
+----------------------------------------
+	|
+	|
+then after go into the your php folder you created in "htdocs" or "www"
+	|
+open that folder in vscode
+	|
+create a following file in that folder:
+
+adddept.php
+addemp.php
+deldept.php
+delemp.php
+emp.php
+index.php
+upddept.php
+updemp.php
+-------------------------------------------------
+	|
+code paste one by one in particular file after creating a file 
+	|
+---------------------------
+in adddept.php file
+---------------------------
+
+<?php
+    if(isset($_POST['save']))
+    {
+        $curl = curl_init();
+
+        curl_setopt_array($curl, array(
+        CURLOPT_URL => 'localhost:2000/dept/addnew',
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => '',
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 0,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => 'POST',
+        CURLOPT_POSTFIELDS =>'{
+            "name" : "'.$_POST['name'].'",
+            "city" : "'.$_POST['city'].'"
+        }',
+        CURLOPT_HTTPHEADER => array(
+            'Content-Type: application/json'
+        ),
+        ));
+
+        $response = curl_exec($curl);
+
+        curl_close($curl);
+        
+        header('location: index.php');
+    }
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Department</title>
+</head>
+<body>
+    <form method="post">
+        <input type="text" name="name" id="name" placeholder="Enter Name">
+        <input type="text" name="city" id="city" placeholder="Enter City">
+        <button type="submit" name="save">save</button>
+    </form>
+</body>
+</html>
+
+---------------------------
+in addemp.php file
+---------------------------
+
+<?php
+
+if(isset($_POST["add"]))
+{
+    $curl = curl_init();
+
+    curl_setopt_array($curl, array(
+    CURLOPT_URL => 'localhost:2000/emp/addall',
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_ENCODING => '',
+    CURLOPT_MAXREDIRS => 10,
+    CURLOPT_TIMEOUT => 0,
+    CURLOPT_FOLLOWLOCATION => true,
+    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+    CURLOPT_CUSTOMREQUEST => 'POST',
+    CURLOPT_POSTFIELDS =>'{
+        "name":"'.$_POST['name'].'",
+        "pno": '.$_POST['pno'].',
+        "email":"'.$_POST['email'].'",
+        "password":"'.$_POST['password'].'"
+    }',
+    CURLOPT_HTTPHEADER => array(
+        'Content-Type: application/json'
+    ),
+    ));
+
+    $response = curl_exec($curl);
+
+    curl_close($curl);
+    //echo $response;
+    header('location: emp.php');
+
+}
+
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee</title>
+</head>
+<body>
+    <form method="post">
+        <h3>Add Employee</h3>
+        <br>
+        <input type="text" name="name" required placeholder="Enter Name"/><br>
+        <input type="email" name="email" required placeholder="Enter Email" /><br>
+        <input type="number" name="pno" required  placeholder="Enter Phone No "/><br>
+        <input type="password" name="password" required  placeholder="Enter Password"/>
+        <br>
+        <button name="add">Add</button>
+    </form>
+</body>
+</html>
+
+---------------------------
+in deldept.php file
+---------------------------
+
+<?php
+    $curl = curl_init();
+
+    curl_setopt_array($curl, array(
+      CURLOPT_URL => 'localhost:2000/dept/delete/' . $_GET['id'],
+      CURLOPT_RETURNTRANSFER => true,
+      CURLOPT_ENCODING => '',
+      CURLOPT_MAXREDIRS => 10,
+      CURLOPT_TIMEOUT => 0,
+      CURLOPT_FOLLOWLOCATION => true,
+      CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+      CURLOPT_CUSTOMREQUEST => 'GET',
+    ));
+    
+    $response = curl_exec($curl);
+    
+    curl_close($curl);
+    header('location: index.php');
+?>
+
+---------------------------
+in delemp.php file
+---------------------------
+
+<?php
+
+$curl = curl_init();
+
+curl_setopt_array($curl, array(
+  CURLOPT_URL => 'localhost:2000/emp/del/'.$_GET['id'],
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_ENCODING => '',
+  CURLOPT_MAXREDIRS => 10,
+  CURLOPT_TIMEOUT => 0,
+  CURLOPT_FOLLOWLOCATION => true,
+  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+  CURLOPT_CUSTOMREQUEST => 'GET',
+));
+
+$response = curl_exec($curl);
+
+curl_close($curl);
+header('location: emp.php');
+
+?>
+
+---------------------------
+in emp.php file
+---------------------------
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>employe</title>
+</head>
+<body>
+    <a href="addemp.php">Add emp</a>
+    <br>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>name</th>
+                <th>pno</th>
+                <th>email</th>
+                <th>password</th>
+                <th>Delete</th>
+                <th>Update</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+                $curl = curl_init();
+                
+                curl_setopt_array($curl, array(
+                  CURLOPT_URL => 'localhost:2000/emp/getall',
+                  CURLOPT_RETURNTRANSFER => true,
+                  CURLOPT_ENCODING => '',
+                  CURLOPT_MAXREDIRS => 10,
+                  CURLOPT_TIMEOUT => 0,
+                  CURLOPT_FOLLOWLOCATION => true,
+                  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                  CURLOPT_CUSTOMREQUEST => 'GET',
+                ));
+                
+                $response = curl_exec($curl);
+                
+                curl_close($curl);
+                //echo $response;
+                $response = json_decode($response,true);
+                foreach ($response as $data) {
+                    echo "<tr>";
+                    echo "<td>$data[_id]</td>";
+                    echo "<td>$data[name]</td>";
+                    echo "<td>$data[pno]</td>";
+                    echo "<td>$data[email]</td>";
+                    echo "<td>$data[password]</td>";
+                    echo "<td><a href='delemp.php?id=$data[_id]'>Delete</a></td>";
+                    echo "<td><a href='updemp.php?id=$data[_id]'>update</a></td>";
+                    echo "</tr>";
+                }
+            ?>
+        </tbody>
+    </table>
+</body>
+</html>
+
+---------------------------
+in index.php file
+---------------------------
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Departments</title>
+</head>
+<body>
+    <h1>Show All Departments</h1>
+    <a href="adddept.php">Add Department</a>
+
+    <br>
+    
+    <a href="emp.php">View emp mamangemnet</a>
+    <br>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>City</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+                $curl = curl_init();
+
+                curl_setopt_array($curl, array(
+                  CURLOPT_URL => 'localhost:2000/dept/findall',
+                  CURLOPT_RETURNTRANSFER => true,
+                  CURLOPT_ENCODING => '',
+                  CURLOPT_MAXREDIRS => 10,
+                  CURLOPT_TIMEOUT => 0,
+                  CURLOPT_FOLLOWLOCATION => true,
+                  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                  CURLOPT_CUSTOMREQUEST => 'GET',
+                ));
+                
+                $response = curl_exec($curl);
+                
+                curl_close($curl);
+                // echo $response;
+                $response = json_decode($response, true);
+
+                foreach ($response as $data) 
+                {
+                    echo "<tr>";
+                    echo "<td>$data[_id]</td>";
+                    echo "<td>$data[name]</td>";
+                    echo "<td>$data[city]</td>";
+                    echo "<td><a href='upddept.php?id=$data[_id]'>Update</a></td>";
+                    echo "<td><a href='deldept.php?id=$data[_id]'>Delete</a></td>";
+                    echo "</tr>";
+                }
+            ?>
+        </tbody>
+    </table>
+</body>
+</html>
+
+---------------------------
+in upddept.php file
+---------------------------
+
+<?php
+
+    if(isset($_POST['save']))
+    {
+        $curl = curl_init();
+
+        curl_setopt_array($curl, array(
+        CURLOPT_URL => 'localhost:2000/dept/update/' . $_GET['id'],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => '',
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 0,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => 'POST',
+        CURLOPT_POSTFIELDS =>'{
+            "name" : "'. $_POST['name'] .'",
+            "city" : "'. $_POST['city'] .'"
+        }',
+        CURLOPT_HTTPHEADER => array(
+            'Content-Type: application/json'
+        ),
+        ));
+
+        $response = curl_exec($curl);
+
+        curl_close($curl);
+        header('location: index.php');
+    }
+    else
+    {
+        $curl = curl_init();
+    
+        curl_setopt_array($curl, array(
+          CURLOPT_URL => 'localhost:2000/dept/getsingle/' . $_GET['id'],
+          CURLOPT_RETURNTRANSFER => true,
+          CURLOPT_ENCODING => '',
+          CURLOPT_MAXREDIRS => 10,
+          CURLOPT_TIMEOUT => 0,
+          CURLOPT_FOLLOWLOCATION => true,
+          CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+          CURLOPT_CUSTOMREQUEST => 'GET',
+        ));
+        
+        $response = curl_exec($curl);
+        
+        curl_close($curl);
+        
+        $response = json_decode($response, true);
+    }
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Department</title>
+</head>
+<body>
+    <form method="post">
+        <input type="text" value="<?php echo $response['name']; ?>" name="name" id="name" placeholder="Enter Name">
+        <input type="text" value="<?php echo $response['city']; ?>" name="city" id="city" placeholder="Enter City">
+        <button type="submit" name="save">save</button>
+    </form>
+</body>
+</html>
+
+---------------------------
+in updemp.php file
+---------------------------
+
+<?php
+
+if(isset($_POST['updated']))
+{
+    $curl = curl_init();
+
+    curl_setopt_array($curl, array(
+    CURLOPT_URL => 'localhost:2000/emp/upd/'.$_GET['id'],
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_ENCODING => '',
+    CURLOPT_MAXREDIRS => 10,
+    CURLOPT_TIMEOUT => 0,
+    CURLOPT_FOLLOWLOCATION => true,
+    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+    CURLOPT_CUSTOMREQUEST => 'POST',
+    CURLOPT_POSTFIELDS =>'{
+        "name":"'.$_POST['name'].'",
+        "pno": '.$_POST['pno'].',
+        "email":"'.$_POST['email'].'",
+        "password":"'.$_POST['password'].'"
+    }',
+    CURLOPT_HTTPHEADER => array(
+        'Content-Type: application/json'
+    ),
+    ));
+
+    $response = curl_exec($curl);
+
+    curl_close($curl);
+    //echo $response;
+    header('location: emp.php');
+}
+
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>update</title>
+</head>
+<body>
+    <form method="post">
+        <h3>updatde Employee</h3>
+        <br>
+        <input type="text" name="name" required /><br>
+        <input type="email" name="email" required /><br>
+        <input type="number" name="pno" required /><br>
+        <input type="password" name="password" required />
+        <br>
+        <button name="updated">update</button>
+    </form>
+</body>
+</html>
+---------------------------------------------
+then save your project
+	|
+then after start your xamp or wamp server
+	|
+then start your node project using commandline = nodemon index.js
+	|
+open chrome and write in url
+	|
+localhost:80/your folder name you create in htdocs/www
+
+
+
+
+
+=========================================================
+	with login & jwt & authentication
+=========================================================
+
+code of register/login & crud operation using ejs 
+	|
+open particular folder in vscode
+	|
+open folder in vscode terminal
+	|
+write a command line for node_module or package
+	|
+npm init
+npm i nodemon -g
+npm i bcryptjs cookie-parser ejs express jsonwebtoken mongoose
+	|
+-------------------------------------------------------
+create index.js file & create views folder for ejs file
+-------------------------------------------------------
+	|
+in index.js file
+-----------------
+
+const express = require('express');
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
+const path = require('path');
+const PORT = 5000;
+const app = express();
+const secretKey = "12AB34DC56EF78GH";
+app.set('view engine', 'ejs')
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }))
+app.use(express.static(path.join(__dirname, 'views')))
+app.use(cookieParser());
+
+const User = mongoose.model('User', new mongoose.Schema({
+    username: { type: 'String', required: true },
+    email: { type: 'String', required: true, unique: true },
+    password: { type: 'String', required: true },
+}));
+const teacher = mongoose.model('Teacher', new mongoose.Schema({
+    id: { type: "Number", required: true, unique: true },
+    title: { type: "String", required: true },
+    description: { type: "String", required: true }
+}));
+
+const authenticateJWT = (req, res, next) => {
+    const token = req.cookies.token;
+    // console.log(token)
+    if (!token) return res.send("Access Denied");
+    jwt.verify(token, secretKey, (err, user) => {
+        if (err) return res.send(err);
+        req.user = user;
+        console.log(user)
+        next();
+    })
+}
+const redirectAuth = (req, res, next) => {
+    const token = req.cookies.token
+    if (token) {
+        jwt.verify(token, secretKey, (err) => {
+            if (!err) {
+                return res.redirect("/")
+            }
+        });
+    }
+    next();
+}
+mongoose.connect("mongodb://127.0.0.1:27017/EBUsers").then((db) => {
+    console.log("MongoDB Connected")
+}).catch(err => {
+    console.error(err);
+});
+
+app.get("/login", redirectAuth, (req, res) => {
+    res.render('login');
+})
+
+app.post("/login", async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            res.send("<script>alert('Invalid Credentials')</script>")
+        }
+        const match = await bcrypt.compare(password, user.password)
+        if (!match) {
+            res.send("<script>alert('Invalid Credentials')</script>")
+        }
+        const token = jwt.sign({ userId: user._id, userName: user.username, email: user.email }, secretKey, { expiresIn: "1h" })
+        res.cookie('token', token, { httpOnly: true }, { expiresIn: 36000000 })
+        res.redirect("/")
+    }
+    catch (err) {
+        console.error(err.message)
+    }
+})
+
+app.get("/register", (req, res) => {
+    res.render("register")
+});
+app.post("/register", async (req, res) => {
+    const { username, email, password } = req.body;
+    const hashPass = await bcrypt.hash(password, 10)
+    const Suser = new User({ username, email, password: hashPass })
+    try {
+        const response = await Suser.save()
+        // res.send("User Saved Successfully", response)
+        res.status(200).send("User Saved Successfully")
+        // console.log(response);
+        res.redirect("/login")
+    } catch (err) {
+        console.error(err)
+    }
+});
+
+app.get("/logout", (req, res) => {
+    res.clearCookie('token');
+    res.redirect("/login")
+});
+
+app.get("/", authenticateJWT, (req, res) => {
+    res.render("home", { userId: req.user.userId, userName: req.user.userName, email: req.user.email })
+});
+
+app.post("/addteach", async (req, res) => {
+    const { id, title, desc } = req.body;
+    try {
+        const Teacher = new teacher({ id: id, title: title, description: desc })
+        const response = await Teacher.save();
+        console.log(response)
+        res.redirect("/teacher")
+    } catch (err) {
+        console.error(err.message)
+    }
+})
+app.get("/teacher", async (req, res) => {
+    try {
+        const data = await teacher.find();
+        res.render("teacher", { data })
+    } catch (err) {
+        console.error(err)
+    }
+})
+app.get("/delete/:id", async (req, res) => {
+    const id = req.params.id;
+    try {
+        const response = await teacher.deleteOne({ id: id });
+        res.redirect("/teacher")
+        console.log(response)
+    } catch (err) {
+        console.error(err)
+    }
+})
+
+app.get("/edit/:id", async (req, res) => {
+    const id = req.params.id;
+    try {
+        const data = await teacher.findOne({ id: id });
+        res.render(`edit`, { data });
+    } catch (err) {
+        console.error(err)
+    }
+});
+app.post("/editteach/:id", async (req,res) => {
+    const {id} = req.params;
+    const { title, desc } = req.body;
+    try {
+        const response = await teacher.findByIdAndUpdate(id, { title, description: desc });
+        console.log(response);
+        res.redirect("/teacher")
+    } catch (err) {
+        console.error(err)
+    }
+})
+app.listen(PORT, (err) => {
+    if (err) {
+        console.error(err)
+    }
+    console.log(`Server Running On Port =  ${PORT}`)
+});
+
+	
+--------------------------------------------
+create ejs file in views folder
+--------------------------------------------
+	|
+create login.ejs
+	|
+------------------
+in login.ejs file
+------------------
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <form action="/login" method="post">
+        <table border="1" align="center">
+            <tr>
+                <td>Enter Email : <br><input type="email" name="email" placeholder="Enter Email"></td>
+            </tr>
+            <tr>
+                <td>Enter Password : <br><input type="password" name="password" placeholder="Enter Password"></td>
+            </tr>
+            <tr>
+                <td><button type="submit">Submit</button></td>
+            </tr>
+        </table>
+    </form>
+</body>
+
+</html>
+---------------------------
+
+
+create home.ejs
+	|
+------------------
+in home.ejs file
+------------------
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    
+</head>
+
+<body>
+    <div>
+        <h1>Welcome <%=userName%>!
+        </h1>
+        <a href="/logout">Logout</a>
+    </div>
+    <form method="post" style="padding: 20px;" action="/addteach">
+        <table align="center" border="1" cellpadding="10px" cellspacing="5px">
+            <tr>
+                <td>Enter Teacher ID : <br><input type="number" name="id"></td>
+            </tr>
+            <tr>
+                <td>Enter Teacher Name : <br><input type="text" name="title"></td>
+            </tr>
+            <tr>
+                <td>Enter Teacher Description : <br><textarea name="desc" rows="5"></textarea></td>
+            </tr>
+            <tr>
+                <td><button type="submit">Submit</button></td>
+            </tr>
+        </table>
+    </form>
+
+</body>
+
+</html>
+
+------------------
+
+create edit.ejs
+	|
+------------------
+in edit.ejs file
+------------------
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit</title>
+</head>
+
+<body>
+    <form method="post" style="padding: 20px;" action="/editteach/<%=data._id%>">
+        <table align="center" border="1" cellpadding="10px" cellspacing="5px">
+            <tr>
+                <td>Enter Teacher ID : <br><input type="number" name="id" value="<%=data.id%>"></td>
+            </tr>
+            <tr>
+                <td>Enter Teacher Name : <br><input type="text" name="title" value="<%=data.title%>"></td>
+            </tr>
+            <tr>
+                <td>Enter Teacher Description : <br><textarea name="desc" rows="5"><%=data.description%></textarea></td>
+            </tr>
+            <tr>
+                <td><button type="submit">Submit</button></td>
+            </tr>
+        </table>
+    </form>
+</body>
+
+</html>
+----------------------
+
+create register.ejs
+	|
+------------------
+in register.ejs file
+------------------
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <form action="/register" method="post">
+        <table border="1" align="center">
+            <tr>
+                <td>Enter Username : <br><input type="text" name="username" placeholder="Enter Username"></td>
+            </tr>
+            <tr>
+                <td>Enter Email : <br><input type="email" name="email" placeholder="Enter Email"></td>
+            </tr>
+            <tr>
+                <td>Enter Password : <br><input type="password" name="password" placeholder="Enter Password"></td>
+            </tr>
+            <tr>
+                <td><button type="submit">Submit</button></td>
+            </tr>
+            <tr>
+                <td>Already A User <a href="/login">Login</a></td>
+            </tr>
+        </table>
+    </form>
+</body>
+
+</html>
+
+--------------------
+create teacher.ejs
+	|
+------------------
+in teacher.ejs file
+------------------
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <a href="/">ADD</a>
+    <ol>
+        <%data.forEach((teacher)=>{%>
+            <li>
+                <ul>
+                    <li>
+                        <%=teacher.id%>
+                    </li>
+                    <li>
+                        <%=teacher.title%>
+                    </li>
+                    <li>
+                        <%=teacher.description%>
+                    </li>
+                    <li>
+                        <a href="/delete/<%=teacher.id%>">Delete ID <span>
+                                <%=teacher.id%>
+                            </span></a>
+                    </li>
+                    <li>
+                        <a href="/edit/<%=teacher.id%>">Update <span>
+                                <%=teacher.id%>
+                            </span></a>
+                    </li>
+                </ul>
+            </li>
+            <br>
+            <%})%>
+                </ul>
+</body>
+
+</html>
+
+command line for run this project = nodemon index.js
+	|
+open chrome and write in url
+	|
+localhost:5000/register
+localhost:5000/login
+localhost:5000/teacher(for direct show teacher data)
